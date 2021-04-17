@@ -9,7 +9,7 @@ for repeated requests.
     :alt: All Contributors
     :target: https://github.com/corteva/msal-requests-auth/blob/master/AUTHORS.rst
 
-.. image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
+.. image:: https://img.shields.io/badge/License-BSD%203--Clause-yellow.svg
     :target: https://github.com/corteva/msal-requests-auth/blob/master/LICENSE
 
 .. image:: https://img.shields.io/pypi/v/msal_requests_auth.svg
