@@ -88,7 +88,7 @@ Client Credentials Flow
     client_secret = "<client secret for client in Azure AD>"
     tenant_id = "<tenant ID from Azure AD>"
     application_id = "<client ID of application you want to get a token for from Azure AD>"
-    credential_client = msal.ConfidentialClientApplication(
+    app = msal.ConfidentialClientApplication(
         client_id,
         authority=(f"https://login.microsoftonline.com/{tenant_id}/"),
         client_credential=client_secret,
