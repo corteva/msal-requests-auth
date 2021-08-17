@@ -41,9 +41,6 @@ Bugs/Questions
 - Ask questions: https://github.com/corteva/msal-requests-auth/discussions
 
 
-.. highlight:: shell
-
-
 Usage
 -----
 
