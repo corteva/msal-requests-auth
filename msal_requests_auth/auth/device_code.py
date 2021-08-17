@@ -2,6 +2,7 @@
 Module for handling the Device Code flow with MSAL and credential refresh.
 """
 import webbrowser
+from typing import List
 
 import pyperclip
 from msal import PublicClientApplication
@@ -15,6 +16,27 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
     """
 
     _client_class = PublicClientApplication
+
+    def __init__(
+        self,
+        client: PublicClientApplication,
+        scopes: List[str],
+        headless=False,
+    ):
+        """
+        .. versionadded:: 0.2.0 headless
+
+        Parameters
+        ----------
+        client: msal.PublicClientApplication
+            The MSAL client to use to get tokens.
+        scopes: List[str]
+            List of scopes to get token for.
+        headless: bool, default=False
+            If True, will skip automatically opening webbrowser and copying to clipboard.
+        """
+        super().__init__(client, scopes)
+        self._headless = headless
 
     def _get_access_token(self):
         """
@@ -37,7 +59,8 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
             scopes=self.scopes,
         )
         print(flow["message"])
-        # copy code to clipboard
-        pyperclip.copy(flow["user_code"])
-        webbrowser.open(flow["verification_uri"])
+        if not self._headless:
+            # copy code to clipboard
+            pyperclip.copy(flow["user_code"])
+            webbrowser.open(flow["verification_uri"])
         return self.client.acquire_token_by_device_flow(flow)

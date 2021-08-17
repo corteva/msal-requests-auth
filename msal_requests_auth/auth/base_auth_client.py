@@ -2,7 +2,9 @@
 Handles refresing tokens with MSAL.
 """
 from abc import abstractmethod
+from typing import List
 
+import msal
 import requests
 
 
@@ -11,10 +13,14 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
     Auth class for the device code flow with MSAL
     """
 
-    def __init__(self, client, scopes):
+    def __init__(self, client: msal.ClientApplication, scopes: List[str]):
         """
         Parameters
         ----------
+        client: msal.ClientApplication
+            The MSAL client to use to get tokens.
+        scopes: List[str]
+            List of scopes to get token for.
         """
         if not isinstance(client, self._client_class):
             raise ValueError(
