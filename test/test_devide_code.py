@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from msal_requests_auth.auth import DeviceCodeAuth
+from msal_requests_auth.exceptions import AuthenticationError
 
 
 @pytest.mark.parametrize("headless", [True, False])
@@ -65,7 +66,7 @@ def test_device_code_auth__no_accounts__unable_to_get_token(
     request_mock = MagicMock()
     request_mock.headers = {}
     with pytest.raises(
-        RuntimeError,
+        AuthenticationError,
         match=(
             r"Unable to get token\. Error: BAD REQUEST "
             r"\(Details: Request to get token was bad\.\)\."
