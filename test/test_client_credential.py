@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from msal_requests_auth.auth import ClientCredentialAuth
+from msal_requests_auth.exceptions import AuthenticationError
 
 
 @patch("msal.ConfidentialClientApplication", autospec=True)
@@ -35,7 +36,7 @@ def test_client_credential_auth__unable_to_get_token(cca_mock):
     request_mock = MagicMock()
     request_mock.headers = {}
     with pytest.raises(
-        RuntimeError,
+        AuthenticationError,
         match=(
             r"Unable to get token\. Error: BAD REQUEST "
             r"\(Details: Request to get token was bad\.\)\."

@@ -7,6 +7,8 @@ from typing import List
 import msal
 import requests
 
+from msal_requests_auth.exceptions import AuthenticationError
+
 
 class BaseMSALRefreshAuth(requests.auth.AuthBase):
     """
@@ -45,7 +47,7 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
         if "access_token" not in token:
             error = token.get("error")
             description = token.get("error_description")
-            raise RuntimeError(
+            raise AuthenticationError(
                 f"Unable to get token. Error: {error} (Details: {description})."
             )
         input_request.headers[
