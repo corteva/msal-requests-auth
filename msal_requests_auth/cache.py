@@ -14,6 +14,9 @@ class SimpleTokenCache(SerializableTokenCache):
     """
     Provides a simple token cache for users to
     persist the cache across sessions.
+
+    .. versionadded:: 0.4.0
+
     """
 
     def __init__(self, cache_file: Union[str, os.PathLike, None] = None):
