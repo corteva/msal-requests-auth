@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 
 from msal_requests_auth import __version__
 
-requirements = ["msal", "requests", "pyperclip"]
+requirements = ["msal", "requests", "pyperclip", "appdirs"]
 extras_require = {"dev": ["pytest", "pytest-cov"]}
 extras_require["all"] = list(chain.from_iterable(extras_require.values()))
 

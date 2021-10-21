@@ -51,16 +51,23 @@ Device Code Flow
 
 .. code-block:: python
 
+    import atexit
+
     import requests
     import msal
     from msal_requests_auth.auth import DeviceCodeAuth
+    from msal_requests_auth.cache import SimpleTokenCache
 
     client_id = "<client ID from Azure AD>"
     tenant_id = "<tenant ID from Azure AD>"
     application_id = "<client ID of application you want to get a token for from Azure AD>"
+
+    token_cache = SimpleTokenCache()
+    atexit.register(token_cache.write_cache)
     app = msal.PublicClientApplication(
         client_id,
         authority=f"https://login.microsoftonline.com/{tenant_id}/",
+        token_cache=token_cache,
     )
     auth = DeviceCodeAuth(
         client=app,
