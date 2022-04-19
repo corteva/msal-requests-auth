@@ -47,7 +47,13 @@ jobs:
         shell: bash
         run: |
           python -m pip install pylint
-          pylint msal_requests_auth
+          python -m pylint msal_requests_auth
+
+      - name: mypy
+        shell: bash
+        run: |
+          python -m pip install mypy types-requests
+          python -m mypy msal_requests_auth
 
       - name: Test
         shell: bash
