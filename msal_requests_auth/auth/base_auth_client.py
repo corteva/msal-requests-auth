@@ -2,7 +2,7 @@
 Handles refresing tokens with MSAL.
 """
 from abc import abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Type
 
 import msal
 import requests
@@ -33,7 +33,7 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
 
     @property
     @abstractmethod
-    def _client_class(self) -> msal.ClientApplication:
+    def _client_class(self) -> Type[msal.ClientApplication]:
         """
         This is the expected type of the client class.
         """
