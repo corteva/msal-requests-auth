@@ -1,6 +1,8 @@
 """
 Module for handling the Device Code flow with MSAL and credential refresh.
 """
+from typing import Dict
+
 from msal import ConfidentialClientApplication
 
 from .base_auth_client import BaseMSALRefreshAuth
@@ -13,7 +15,7 @@ class ClientCredentialAuth(BaseMSALRefreshAuth):
 
     _client_class = ConfidentialClientApplication
 
-    def _get_access_token(self):
+    def _get_access_token(self) -> Dict[str, str]:
         """
         Retrieve access token from MSAL using client credential flow.
 

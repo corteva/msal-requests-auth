@@ -2,7 +2,7 @@
 Handles refresing tokens with MSAL.
 """
 from abc import abstractmethod
-from typing import List
+from typing import Dict, List
 
 import msal
 import requests
@@ -33,13 +33,15 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
 
     @property
     @abstractmethod
-    def _client_class(self):
+    def _client_class(self) -> msal.ClientApplication:
         """
         This is the expected type of the client class.
         """
         raise NotImplementedError
 
-    def __call__(self, input_request):
+    def __call__(
+        self, input_request: requests.PreparedRequest
+    ) -> requests.PreparedRequest:
         """
         Adds the token to the authorization header.
         """
@@ -55,9 +57,8 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
         ] = f"{token['token_type']} {token['access_token']}"
         return input_request
 
-    @property
     @abstractmethod
-    def _get_access_token(self):
+    def _get_access_token(self) -> Dict[str, str]:
         """
         Retrieves the token dictionary from Azure AD.
 

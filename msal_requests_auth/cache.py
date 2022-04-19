@@ -19,7 +19,7 @@ class SimpleTokenCache(SerializableTokenCache):
 
     """
 
-    def __init__(self, cache_file: Union[str, os.PathLike, None] = None):
+    def __init__(self, cache_file: Union[str, os.PathLike, None] = None) -> None:
         """
         Parameters
         ----------
@@ -39,7 +39,7 @@ class SimpleTokenCache(SerializableTokenCache):
         if self.cache_file.exists():
             self.deserialize(self.cache_file.read_text())
 
-    def write_cache(self):
+    def write_cache(self) -> None:
         """
         Write cache to disk if needed.
         """
