@@ -60,4 +60,11 @@ jobs:
         run: |
           python -m pytest --cov-report term-missing --cov=msal_requests_auth --cov-report xml
 
+      - name: Dist Check
+        shell: bash
+        run: |
+            python -m pip install twine build
+            python -m build
+            twine check --strict dist/*
+
       - uses: codecov/codecov-action@v1
