@@ -1,6 +1,7 @@
 """
 Module for handling the Device Code flow with MSAL and credential refresh.
 """
+import os
 import webbrowser
 from typing import Dict, List
 
@@ -21,10 +22,11 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
         self,
         client: PublicClientApplication,
         scopes: List[str],
-        headless: bool = False,
+        headless: bool = None,
     ):
         """
         .. versionadded:: 0.2.0 headless
+        .. versionadded:: 0.6.0 MSAL_REQUESTS_AUTH_HEADLESS environment variable
 
         Parameters
         ----------
@@ -32,11 +34,15 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
             The MSAL client to use to get tokens.
         scopes: List[str]
             List of scopes to get token for.
-        headless: bool, default=False
-            If True, will skip automatically opening webbrowser and copying to clipboard.
+        headless: bool, optional
+            If None (default), it will check the MSAL_REQUESTS_AUTH_HEADLESS environment
+            variable and default to False if it is not found.
+            If False, it will open a webbrowser and copy the code to the clipboard.
+            If True, it will skip automatically opening webbrowser and copying to clipboard.
         """
         super().__init__(client, scopes)
-        self._headless = headless
+        headless_default = bool(os.getenv("MSAL_REQUESTS_AUTH_HEADLESS", False))
+        self._headless = headless_default if headless is None else headless
 
     def _get_access_token(self) -> Dict[str, str]:
         """

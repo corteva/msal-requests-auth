@@ -1,3 +1,4 @@
+import os
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -6,6 +7,7 @@ from msal_requests_auth.auth import DeviceCodeAuth
 from msal_requests_auth.exceptions import AuthenticationError
 
 
+@patch.dict(os.environ, {}, clear=True)
 @pytest.mark.parametrize("headless", [True, False])
 @patch("msal.PublicClientApplication", autospec=True)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
@@ -47,6 +49,20 @@ def test_device_code_auth__no_accounts(
         webbrowser_patch.open.assert_called_with("TEST URL")
 
 
+@patch.dict(os.environ, {"MSAL_REQUESTS_AUTH_HEADLESS": "true"}, clear=True)
+@pytest.mark.parametrize("headless", [True, False, None])
+@patch("msal.PublicClientApplication", autospec=True)
+def test_device_code_auth__headless(pca_mock, headless):
+    returned_request = DeviceCodeAuth(
+        client=pca_mock, scopes=["TEST SCOPE"], headless=headless
+    )
+    if headless is False:
+        assert returned_request._headless is False
+    else:
+        assert returned_request._headless is True
+
+
+@patch.dict(os.environ, {}, clear=True)
 @patch("msal.PublicClientApplication", autospec=True)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
 @patch("msal_requests_auth.auth.device_code.pyperclip")
@@ -86,6 +102,7 @@ def test_device_code_auth__no_accounts__unable_to_get_token(
     pyperclip_patch.copy.assert_called_with("TEST CODE")
 
 
+@patch.dict(os.environ, {}, clear=True)
 @patch("msal.PublicClientApplication", autospec=True)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
 @patch("msal_requests_auth.auth.device_code.pyperclip")
@@ -126,6 +143,7 @@ def test_device_code_auth__invalid_accounts(
     pyperclip_patch.copy.assert_called_with("TEST CODE")
 
 
+@patch.dict(os.environ, {}, clear=True)
 @patch("msal.PublicClientApplication", autospec=True)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
 @patch("msal_requests_auth.auth.device_code.pyperclip")
