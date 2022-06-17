@@ -47,7 +47,13 @@ Usage
 Device Code Flow
 ~~~~~~~~~~~~~~~~
 
-.. note:: This will automatically copy the code to your clipboard and open the browser window for you.
+.. note:: By default, `DeviceCodeAuth` copys the code to your clipboard and opens a webbrowser.
+          To disable, either set `headless=True` when initializing `DeviceCodeAuth`
+          or set the environment variable `MSAL_REQUESTS_AUTH_HEADLESS` to `true`.
+
+.. versionadded:: 0.2.0 headless
+.. versionadded:: 0.6.0 MSAL_REQUESTS_AUTH_HEADLESS environment variable
+
 
 .. code-block:: python
 
