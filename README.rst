@@ -44,6 +44,12 @@ Bugs/Questions
 Usage
 -----
 
+Compatible with:
+
+- `requests <https://requests.readthedocs.io/en/latest/>`_
+- `httpx <https://www.python-httpx.org/>`_
+
+
 Device Code Flow
 ~~~~~~~~~~~~~~~~
 
