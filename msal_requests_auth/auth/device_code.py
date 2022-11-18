@@ -3,7 +3,7 @@ Module for handling the Device Code flow with MSAL and credential refresh.
 """
 import os
 import webbrowser
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import pyperclip
 from msal import PublicClientApplication
@@ -22,7 +22,7 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
         self,
         client: PublicClientApplication,
         scopes: List[str],
-        headless: bool = None,
+        headless: Optional[bool] = None,
     ):
         """
         .. versionadded:: 0.2.0 headless
