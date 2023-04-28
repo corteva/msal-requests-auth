@@ -59,20 +59,20 @@ Device Code Flow
 
 - New in version 0.2.0: headless
 - New in version 0.6.0: MSAL_REQUESTS_AUTH_HEADLESS environment variable
-
+- New in version 0.7.0: KeyringTokenCache
 
 .. code-block:: python
 
     import requests
     import msal
     from msal_requests_auth.auth import DeviceCodeAuth
-    from msal_requests_auth.cache import SimpleTokenCache
+    from msal_requests_auth.cache import KeyringTokenCache
 
     client_id = "<client ID from Azure AD>"
     tenant_id = "<tenant ID from Azure AD>"
     application_id = "<client ID of application you want to get a token for from Azure AD>"
 
-    with SimpleTokenCache() as token_cache:
+    with KeyringTokenCache() as token_cache:
         app = msal.PublicClientApplication(
             client_id,
             authority=f"https://login.microsoftonline.com/{tenant_id}/",
