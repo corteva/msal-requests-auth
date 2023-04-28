@@ -3,6 +3,7 @@ Based on:
 https://msal-python.readthedocs.io/en/latest/#msal.SerializableTokenCache
 """
 import os
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union
 
@@ -10,7 +11,29 @@ from appdirs import user_cache_dir
 from msal import SerializableTokenCache
 
 
-class SimpleTokenCache(SerializableTokenCache):
+class _BaseTokenCache(ABC, SerializableTokenCache):
+    """
+    Base class for a token cache
+    """
+
+    @abstractmethod
+    def write_cache(self) -> None:
+        """
+        Write cache if needed.
+        """
+        raise NotImplementedError
+
+    def __del__(self):
+        self.write_cache()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.write_cache()
+
+
+class SimpleTokenCache(_BaseTokenCache):
     """
     Provides a simple token cache for users to
     persist the cache across sessions.
@@ -46,11 +69,43 @@ class SimpleTokenCache(SerializableTokenCache):
         if self.has_state_changed:
             self.cache_file.write_text(self.serialize())
 
-    def __del__(self):
-        self.write_cache()
 
-    def __enter__(self):
-        return self
+def _import_keyring():
+    """
+    Method to import keyring with error message
+    """
+    try:
+        import keyring
+    except ModuleNotFoundError as error:
+        raise ModuleNotFoundError(
+            "Please install msal_requests_auth with the "
+            "'keyring' extra: msal_requests_auth[keyring]."
+        ) from error
+    return keyring
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.write_cache()
+
+class KeyringTokenCache(_BaseTokenCache):
+    """
+    Provides a token cache for users to
+    persist the cache across sessions using keyring.
+
+    .. versionadded:: 0.7.0
+
+    .. note:: Requires keyring to be installed. The 'keyring'
+              extra can be used for that (msal_requests_auth[keyring]).
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        token_cache = _import_keyring().get_password("__msal_requests_auth__", "token")
+        if token_cache is not None:
+            self.deserialize(token_cache)
+
+    def write_cache(self) -> None:
+        """
+        Write cache to keyring if needed.
+        """
+        if self.has_state_changed:
+            _import_keyring().set_password(
+                "__msal_requests_auth__", "token", self.serialize()
+            )

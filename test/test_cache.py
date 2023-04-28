@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from msal_requests_auth.cache import SimpleTokenCache
+from msal_requests_auth.cache import KeyringTokenCache, SimpleTokenCache
 
 
 @patch("msal_requests_auth.cache.user_cache_dir")
@@ -48,3 +48,44 @@ def test_simple_token_cache__deserialize(
     deserialize_mock.assert_called_with("TEST")
     user_cache_dir_mock.assert_not_called()
     assert cache.cache_file == test_file
+
+
+@patch("msal_requests_auth.cache._import_keyring")
+@patch("msal_requests_auth.cache.KeyringTokenCache.serialize")
+def test_keyring_token_cache(serialize_mock, keyring_mock):
+    serialize_mock.return_value = "TEST"
+    keyring_mock.return_value.get_password.return_value = None
+    with KeyringTokenCache() as cache:
+        cache.has_state_changed = True
+    keyring_mock.return_value.get_password.assert_called_with(
+        "__msal_requests_auth__", "token"
+    )
+    keyring_mock.return_value.set_password.assert_called_with(
+        "__msal_requests_auth__", "token", "TEST"
+    )
+
+
+@patch("msal_requests_auth.cache._import_keyring")
+@patch("msal_requests_auth.cache.KeyringTokenCache.serialize")
+def test_keyring_token_cache__write_cache(serialize_mock, keyring_mock):
+    serialize_mock.return_value = "TEST"
+    keyring_mock.return_value.get_password.return_value = None
+    cache = KeyringTokenCache()
+    keyring_mock.return_value.get_password.assert_called_with(
+        "__msal_requests_auth__", "token"
+    )
+    cache.write_cache()
+    keyring_mock.return_value.set_password.assert_not_called()
+    cache.has_state_changed = True
+    cache.write_cache()
+    keyring_mock.return_value.set_password.assert_called_with(
+        "__msal_requests_auth__", "token", "TEST"
+    )
+
+
+@patch("msal_requests_auth.cache._import_keyring")
+@patch("msal_requests_auth.cache.KeyringTokenCache.deserialize")
+def test_keyring_token_cache__deserialize(deserialize_mock, keyring_mock):
+    keyring_mock.return_value.get_password.return_value = "TEST"
+    KeyringTokenCache()
+    deserialize_mock.assert_called_with("TEST")
