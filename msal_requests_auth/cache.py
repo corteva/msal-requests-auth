@@ -3,6 +3,7 @@ Based on:
 https://msal-python.readthedocs.io/en/latest/#msal.SerializableTokenCache
 """
 import os
+import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union
@@ -105,7 +106,18 @@ class KeyringTokenCache(_BaseTokenCache):
         """
         Write cache to keyring if needed.
         """
-        if self.has_state_changed:
+        if not self.has_state_changed:
+            return
+
+        try:
             _import_keyring().set_password(
                 "__msal_requests_auth__", "token", self.serialize()
+            )
+        except Exception as error:  # pylint: disable=broad-exception-caught
+            # some windows machines have issues writing to keyring
+            # win32ctypes.pywin32.pywintypes.error: (1783, 'CredWrite', 'The stub received bad data')
+            if getattr(error, "winerror", None) != 1783:
+                raise
+            warnings.warn(
+                f"Token cache skipped due to error writing to keyring. Error: {error}"
             )
