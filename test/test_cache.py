@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 from msal_requests_auth.cache import KeyringTokenCache, SimpleTokenCache
 
 
@@ -89,3 +91,50 @@ def test_keyring_token_cache__deserialize(deserialize_mock, keyring_mock):
     keyring_mock.return_value.get_password.return_value = "TEST"
     KeyringTokenCache()
     deserialize_mock.assert_called_with("TEST")
+
+
+@patch("msal_requests_auth.cache._import_keyring")
+@patch("msal_requests_auth.cache.KeyringTokenCache.serialize")
+def test_keyring_token_cache__write_cache__windows_error(serialize_mock, keyring_mock):
+    class MyException(Exception):
+        def __init__(self, *args, **kwargs) -> None:
+            self.winerror = 1783
+            super().__init__(*args, **kwargs)
+
+    keyring_mock.return_value.set_password.side_effect = MyException
+
+    serialize_mock.return_value = "TEST"
+    keyring_mock.return_value.get_password.return_value = None
+    with KeyringTokenCache() as cache:
+        pass
+    keyring_mock.return_value.get_password.assert_called_with(
+        "__msal_requests_auth__", "token"
+    )
+    keyring_mock.return_value.set_password.assert_not_called()
+    cache.has_state_changed = True
+    with pytest.warns(match="Token cache skipped due to error writing to keyring"):
+        with KeyringTokenCache() as cache:
+            cache.has_state_changed = True
+    keyring_mock.return_value.set_password.assert_called_with(
+        "__msal_requests_auth__", "token", "TEST"
+    )
+
+
+@patch("msal_requests_auth.cache._import_keyring")
+@patch("msal_requests_auth.cache.KeyringTokenCache.serialize")
+def test_keyring_token_cache__write_cache__error(serialize_mock, keyring_mock):
+    keyring_mock.return_value.set_password.side_effect = RuntimeError
+    serialize_mock.return_value = "TEST"
+    keyring_mock.return_value.get_password.return_value = None
+    with KeyringTokenCache() as cache:
+        pass
+    keyring_mock.return_value.get_password.assert_called_with(
+        "__msal_requests_auth__", "token"
+    )
+    keyring_mock.return_value.set_password.assert_not_called()
+    with pytest.raises(RuntimeError):
+        with KeyringTokenCache() as cache:
+            cache.has_state_changed = True
+    keyring_mock.return_value.set_password.assert_called_with(
+        "__msal_requests_auth__", "token", "TEST"
+    )
