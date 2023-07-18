@@ -2,6 +2,7 @@
 Module for handling the Device Code flow with MSAL and credential refresh.
 """
 import os
+import warnings
 import webbrowser
 from typing import Dict, List, Optional
 
@@ -67,6 +68,15 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
         print(flow["message"])
         if not self._headless:
             # copy code to clipboard
-            pyperclip.copy(flow["user_code"])
-            webbrowser.open(flow["verification_uri"])
+            try:
+                pyperclip.copy(flow["user_code"])
+                webbrowser.open(flow["verification_uri"])
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                warnings.warn(
+                    "Error encountered while copying code to clipboard "
+                    f"and opening a webbrowser ({error})."
+                    "To hide this message, set headless=True "
+                    "or set the MSAL_REQUESTS_AUTH_HEADLESS "
+                    "environment variable to 'true'."
+                )
         return self.client.acquire_token_by_device_flow(flow)

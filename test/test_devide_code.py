@@ -168,3 +168,45 @@ def test_device_code_auth__accounts(pyperclip_patch, webbrowser_patch, pca_mock)
     assert returned_request.headers == {"Authorization": "Bearer TEST TOKEN"}
     webbrowser_patch.open.assert_not_called()
     pyperclip_patch.copy.assert_not_called()
+
+
+@patch.dict(os.environ, {}, clear=True)
+@patch("msal.PublicClientApplication", autospec=True)
+@patch("msal_requests_auth.auth.device_code.webbrowser")
+@patch("msal_requests_auth.auth.device_code.pyperclip")
+def test_device_code_auth__pyperclip_error(pyperclip_patch, webbrowser_patch, pca_mock):
+    pyperclip_patch.copy.side_effect = AttributeError
+    pca_mock.get_accounts.return_value = None
+    pca_mock.initiate_device_flow.return_value = {
+        "message": "TEST MESSAGE",
+        "verification_uri": "TEST URL",
+        "user_code": "TEST CODE",
+    }
+    pca_mock.acquire_token_by_device_flow.return_value = {
+        "token_type": "Bearer",
+        "access_token": "TEST TOKEN",
+    }
+    request_mock = MagicMock()
+    request_mock.headers = {}
+    with pytest.warns(
+        UserWarning,
+        match="Error encountered while copying code to clipboard and opening a webbrowser.",
+    ):
+        returned_request = DeviceCodeAuth(client=pca_mock, scopes=["TEST SCOPE"])(
+            request_mock
+        )
+
+    pca_mock.acquire_token_silent.assert_not_called()
+    pca_mock.initiate_device_flow.assert_called_with(scopes=["TEST SCOPE"])
+    pca_mock.acquire_token_by_device_flow.assert_called_with(
+        {
+            "message": "TEST MESSAGE",
+            "verification_uri": "TEST URL",
+            "user_code": "TEST CODE",
+        }
+    )
+
+    assert returned_request.headers == {"Authorization": "Bearer TEST TOKEN"}
+
+    pyperclip_patch.copy.assert_called_with("TEST CODE")
+    webbrowser_patch.open.assert_not_called()
