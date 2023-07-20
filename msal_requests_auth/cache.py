@@ -24,9 +24,6 @@ class _BaseTokenCache(ABC, SerializableTokenCache):
         """
         raise NotImplementedError
 
-    def __del__(self):
-        self.write_cache()
-
     def __enter__(self):
         return self
 
