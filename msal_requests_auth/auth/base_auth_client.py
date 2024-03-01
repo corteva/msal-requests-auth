@@ -55,6 +55,8 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
         """
         Retrieves the token dictionary from Azure AD.
 
+        .. versionadded:: 0.8.0
+
         Returns
         -------
         dict
