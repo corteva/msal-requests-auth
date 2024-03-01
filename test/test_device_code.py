@@ -66,7 +66,7 @@ def test_device_code_auth__headless(pca_mock, headless):
 @patch("msal.PublicClientApplication", autospec=True)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
 @patch("msal_requests_auth.auth.device_code.pyperclip")
-def test_device_code_auth__no_accounts__unable_to_get_token(
+def test_device_code_auth__no_accounts__unable_to_get_token__call(
     pyperclip_patch, webbrowser_patch, pca_mock
 ):
     pca_mock.get_accounts.return_value = None
@@ -100,6 +100,40 @@ def test_device_code_auth__no_accounts__unable_to_get_token(
     )
     webbrowser_patch.open.assert_called_with("TEST URL")
     pyperclip_patch.copy.assert_called_with("TEST CODE")
+
+
+@patch.dict(os.environ, {}, clear=True)
+@patch("msal.PublicClientApplication", autospec=True)
+@patch("msal_requests_auth.auth.device_code.DeviceCodeAuth._get_access_token")
+def test_device_code_auth__get_access_token__error(access_token_mock, pca_mock):
+    access_token_mock.return_value = {
+        "error": "BAD REQUEST",
+        "error_description": "Request to get token was bad.",
+    }
+    with pytest.raises(
+        AuthenticationError,
+        match=(
+            r"Unable to get token\. Error: BAD REQUEST "
+            r"\(Details: Request to get token was bad\.\)\."
+        ),
+    ):
+        DeviceCodeAuth(client=pca_mock, scopes=["TEST SCOPE"]).get_access_token()
+
+
+@patch.dict(os.environ, {}, clear=True)
+@patch("msal.PublicClientApplication", autospec=True)
+@patch("msal_requests_auth.auth.device_code.DeviceCodeAuth._get_access_token")
+def test_device_code_auth__get_access_token__valid(access_token_mock, pca_mock):
+    access_token_mock.return_value = {
+        "token_type": "Bearer",
+        "access_token": "TEST TOKEN",
+    }
+    assert DeviceCodeAuth(
+        client=pca_mock, scopes=["TEST SCOPE"]
+    ).get_access_token() == {
+        "token_type": "Bearer",
+        "access_token": "TEST TOKEN",
+    }
 
 
 @patch.dict(os.environ, {}, clear=True)
