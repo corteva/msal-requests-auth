@@ -133,6 +133,33 @@ If you use conda:
     $ conda install -c conda-forge msal_requests_auth
 
 
+Windows keyring backend
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Windows Credential Locker is used by default by ``keyring``.
+However, its password length limitations often prevent
+storing tokens. An alternative backend may resolve this limitation.
+When choosing a backend, be sure you are aware of its limitations.
+
+``keyrings.alt`` is an alternative ``keyring`` backend to consider:
+
+.. code-block:: console
+
+    python -m pip install keyrings.alt
+
+
+Here is an example of how to set an alternative backend for ``keyring``:
+
+.. code-block:: python
+
+    import keyring
+
+    keyring.core._config_path().parent.mkdir(parents=True, exist_ok=True)
+    keyring.core._config_path().write_text(
+        "[backend]\ndefault-keyring=keyrings.alt.Windows.EncryptedKeyring"
+    )
+
+
 Credits
 -------
 
