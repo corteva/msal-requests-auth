@@ -8,8 +8,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union
 
-from appdirs import user_cache_dir
 from msal import SerializableTokenCache
+from platformdirs import user_cache_dir
 
 
 class _BaseTokenCache(ABC, SerializableTokenCache):
