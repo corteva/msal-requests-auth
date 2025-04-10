@@ -6,7 +6,7 @@ import os
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Union
+from typing import Union, overload
 
 from msal import SerializableTokenCache
 from platformdirs import user_cache_dir
@@ -161,9 +161,21 @@ class EnvironmentTokenCache(_BaseTokenCache):
             os.environ[self._environment_variable] = self.serialize()
 
 
+@overload
+def get_token_cache() -> Union[KeyringTokenCache, NullCache]:
+    ...
+
+
+@overload
+def get_token_cache(
+    allow_environment_token_cache: bool = True,
+) -> Union[KeyringTokenCache, NullCache, EnvironmentTokenCache]:
+    ...
+
+
 def get_token_cache(
     allow_environment_token_cache: bool = False,
-) -> Union[KeyringTokenCache, NullCache]:
+) -> Union[KeyringTokenCache, NullCache, EnvironmentTokenCache]:
     """
     Retrieve the token cache based on user set up.
 
