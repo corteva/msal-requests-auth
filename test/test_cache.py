@@ -1,8 +1,15 @@
+import os
 from unittest.mock import patch
 
 import pytest
 
-from msal_requests_auth.cache import KeyringTokenCache, SimpleTokenCache
+from msal_requests_auth.cache import (
+    EnvironmentTokenCache,
+    KeyringTokenCache,
+    NullCache,
+    SimpleTokenCache,
+    get_token_cache,
+)
 
 
 @patch("msal_requests_auth.cache.user_cache_dir")
@@ -138,3 +145,90 @@ def test_keyring_token_cache__write_cache__error(serialize_mock, keyring_mock):
     keyring_mock.return_value.set_password.assert_called_with(
         "__msal_requests_auth__", "token", "TEST"
     )
+
+
+def test_null_cache():
+    with NullCache() as cache:
+        cache.has_state_changed = True
+
+
+@patch.dict(os.environ, {}, clear=True)
+@patch("msal_requests_auth.cache.EnvironmentTokenCache.deserialize")
+@patch("msal_requests_auth.cache.EnvironmentTokenCache.serialize")
+def test_environment_token_cache(serialize_mock, deserialize_mock):
+    serialize_mock.return_value = "INPUT FROM CACHE"
+    with EnvironmentTokenCache() as cache:
+        cache.has_state_changed = True
+    assert os.environ == {"__msal_requests_auth_cache__": "INPUT FROM CACHE"}
+    deserialize_mock.assert_not_called()
+
+
+@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch("msal_requests_auth.cache.EnvironmentTokenCache.deserialize")
+@patch("msal_requests_auth.cache.EnvironmentTokenCache.serialize")
+def test_environment_token_cache__initialized(serialize_mock, deserialize_mock):
+    serialize_mock.return_value = "INPUT FROM CACHE"
+    with EnvironmentTokenCache() as cache:
+        assert os.environ == {"__msal_requests_auth_cache__": "INPUT"}
+        cache.has_state_changed = True
+    assert os.environ == {"__msal_requests_auth_cache__": "INPUT FROM CACHE"}
+    deserialize_mock.assert_called_once_with("INPUT")
+
+
+@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch("msal_requests_auth.cache._import_keyring")
+def test_get_token_cache__keyring(keyring_mock):
+    class NoKeyringError(Exception):
+        pass
+
+    keyring_mock.return_value.get_password.return_value = None
+    keyring_mock.return_value.errors.NoKeyringError = NoKeyringError
+    assert isinstance(get_token_cache(), KeyringTokenCache)
+
+
+@patch.dict(os.environ, {}, clear=True)
+@patch("msal_requests_auth.cache._import_keyring")
+def test_get_token_cache__keyring__env_enabled(keyring_mock):
+    class NoKeyringError(Exception):
+        pass
+
+    keyring_mock.return_value.get_password.return_value = None
+    keyring_mock.return_value.errors.NoKeyringError = NoKeyringError
+    assert isinstance(
+        get_token_cache(allow_environment_token_cache=True), KeyringTokenCache
+    )
+
+
+@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch("msal_requests_auth.cache._import_keyring")
+def test_get_token_cache__null(keyring_mock):
+    class NoKeyringError(Exception):
+        pass
+
+    keyring_mock.return_value.get_password.side_effect = NoKeyringError
+    keyring_mock.return_value.errors.NoKeyringError = NoKeyringError
+    with pytest.warns(UserWarning, match="Keyring backend not detected"):
+        assert isinstance(get_token_cache(), NullCache)
+
+
+@patch.dict(os.environ, {}, clear=True)
+@patch("msal_requests_auth.cache._import_keyring")
+def test_get_token_cache__null__env_enabled(keyring_mock):
+    class NoKeyringError(Exception):
+        pass
+
+    keyring_mock.return_value.get_password.side_effect = NoKeyringError
+    keyring_mock.return_value.errors.NoKeyringError = NoKeyringError
+    with pytest.warns(UserWarning, match="Keyring backend not detected"):
+        assert isinstance(
+            get_token_cache(allow_environment_token_cache=True), NullCache
+        )
+
+
+@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch("msal_requests_auth.cache.EnvironmentTokenCache.deserialize")
+def test_get_token_cache__environment(deserialize_mock):
+    assert isinstance(
+        get_token_cache(allow_environment_token_cache=True), EnvironmentTokenCache
+    )
+    deserialize_mock.assert_called_once_with("INPUT")
