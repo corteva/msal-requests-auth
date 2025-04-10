@@ -145,7 +145,7 @@ class EnvironmentTokenCache(_BaseTokenCache):
 
     """
 
-    _environment_variable = "__msal_requests_auth_cache__"
+    _environment_variable = "__MSAL_REQUESTS_AUTH_CACHE__"
 
     def __init__(self) -> None:
         super().__init__()

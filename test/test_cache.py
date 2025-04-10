@@ -159,23 +159,23 @@ def test_environment_token_cache(serialize_mock, deserialize_mock):
     serialize_mock.return_value = "INPUT FROM CACHE"
     with EnvironmentTokenCache() as cache:
         cache.has_state_changed = True
-    assert os.environ == {"__msal_requests_auth_cache__": "INPUT FROM CACHE"}
+    assert os.environ == {"__MSAL_REQUESTS_AUTH_CACHE__": "INPUT FROM CACHE"}
     deserialize_mock.assert_not_called()
 
 
-@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch.dict(os.environ, {"__MSAL_REQUESTS_AUTH_CACHE__": "INPUT"}, clear=True)
 @patch("msal_requests_auth.cache.EnvironmentTokenCache.deserialize")
 @patch("msal_requests_auth.cache.EnvironmentTokenCache.serialize")
 def test_environment_token_cache__initialized(serialize_mock, deserialize_mock):
     serialize_mock.return_value = "INPUT FROM CACHE"
     with EnvironmentTokenCache() as cache:
-        assert os.environ == {"__msal_requests_auth_cache__": "INPUT"}
+        assert os.environ == {"__MSAL_REQUESTS_AUTH_CACHE__": "INPUT"}
         cache.has_state_changed = True
-    assert os.environ == {"__msal_requests_auth_cache__": "INPUT FROM CACHE"}
+    assert os.environ == {"__MSAL_REQUESTS_AUTH_CACHE__": "INPUT FROM CACHE"}
     deserialize_mock.assert_called_once_with("INPUT")
 
 
-@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch.dict(os.environ, {"__MSAL_REQUESTS_AUTH_CACHE__": "INPUT"}, clear=True)
 @patch("msal_requests_auth.cache._import_keyring")
 def test_get_token_cache__keyring(keyring_mock):
     class NoKeyringError(Exception):
@@ -199,7 +199,7 @@ def test_get_token_cache__keyring__env_enabled(keyring_mock):
     )
 
 
-@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch.dict(os.environ, {"__MSAL_REQUESTS_AUTH_CACHE__": "INPUT"}, clear=True)
 @patch("msal_requests_auth.cache._import_keyring")
 def test_get_token_cache__null(keyring_mock):
     class NoKeyringError(Exception):
@@ -225,7 +225,7 @@ def test_get_token_cache__null__env_enabled(keyring_mock):
         )
 
 
-@patch.dict(os.environ, {"__msal_requests_auth_cache__": "INPUT"}, clear=True)
+@patch.dict(os.environ, {"__MSAL_REQUESTS_AUTH_CACHE__": "INPUT"}, clear=True)
 @patch("msal_requests_auth.cache.EnvironmentTokenCache.deserialize")
 def test_get_token_cache__environment(deserialize_mock):
     assert isinstance(
