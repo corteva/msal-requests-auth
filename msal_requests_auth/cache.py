@@ -31,10 +31,25 @@ class _BaseTokenCache(ABC, SerializableTokenCache):
         self.write_cache()
 
 
+class NullCache(_BaseTokenCache):
+    """
+    This cache doesn't write anywhere.
+    It is used as a backup cache in case others are not enabled.
+
+    .. versionadded:: 0.9.0
+
+    """
+
+    def write_cache(self) -> None:
+        pass
+
+
 class SimpleTokenCache(_BaseTokenCache):
     """
     Provides a simple token cache for users to
     persist the cache across sessions.
+
+    .. warning:: Simple token cache is insecure. It is recommended to use KeyringTokenCache instead.
 
     .. versionadded:: 0.4.0
 
@@ -118,3 +133,57 @@ class KeyringTokenCache(_BaseTokenCache):
             warnings.warn(
                 f"Token cache skipped due to error writing to keyring. Error: {error}"
             )
+
+
+class EnvironmentTokenCache(_BaseTokenCache):
+    """
+    Provides a token cache for users to initialize and persist the cache using environment variables within a Python session.
+
+    .. warning:: Environment token cache is insecure. It is recommended to use KeyringTokenCache instead.
+
+    .. versionadded:: 0.9.0
+
+    """
+
+    _environment_variable = "__msal_requests_auth_cache__"
+
+    def __init__(self) -> None:
+        super().__init__()
+        token_cache = os.getenv(self._environment_variable)
+        if token_cache:
+            self.deserialize(token_cache)
+
+    def write_cache(self) -> None:
+        """
+        Write cache to environment variable if needed.
+        """
+        if self.has_state_changed:
+            os.environ[self._environment_variable] = self.serialize()
+
+
+def get_token_cache(
+    allow_environment_token_cache: bool = False,
+) -> Union[KeyringTokenCache, NullCache]:
+    """
+    Retrieve the token cache based on user set up.
+
+    Order of choosing cache:
+
+    - Use EnvironmentTokenCache if allowed and the environment variable exists.
+    - Use KeyringTokenCache if enabled.
+    - Use NullCache.
+
+    .. versionadded:: 0.9.0
+    """
+    if allow_environment_token_cache and os.getenv(
+        EnvironmentTokenCache._environment_variable
+    ):
+        return EnvironmentTokenCache()
+    try:
+        return KeyringTokenCache()
+    except _import_keyring().errors.NoKeyringError:
+        warnings.warn(
+            "Keyring backend not detected. Not caching tokens. "
+            "For more details: https://pypi.org/project/keyring/"
+        )
+    return NullCache()
