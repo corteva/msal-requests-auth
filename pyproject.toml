@@ -1,0 +1,84 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "msal_requests_auth"
+dynamic = ["version"]
+description = "Authentication using python requests and MSAL"
+maintainers = [
+    {name = "msal_requests_auth Contributors"},
+]
+keywords = [
+    "authenticate",
+    "msal",
+    "microsoft",
+    "requests",
+]
+readme = "README.rst"
+license = {text = "BSD-3-Clause"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "platformdirs",
+    "msal",
+    "pyperclip",
+    "requests"
+]
+
+[project.optional-dependencies]
+keyring = ["keyring"]
+all = ["msal_requests_auth[keyring]"]
+
+[tool.setuptools.dynamic]
+version = {attr = "msal_requests_auth.__version__"}
+
+[dependency-groups]
+test = [
+    "pytest>=3.6",
+    "pytest-cov",
+]
+type = [
+    "mypy",
+    "types-requests",
+]
+lint = [
+    "pylint"
+]
+dev = [
+    "pre-commit",
+    {include-group = "test"},
+    {include-group = "type"},
+    {include-group = "lint"}
+]
+
+[project.urls]
+repository = " https://github.com/corteva/msal-requests-auth"
+
+
+[tool.setuptools.packages.find]
+include = ["msal_requests_auth", "msal_requests_auth.*"]
+
+[options.package_data]
+msal_requests_auth = [
+  "py.typed",
+]
+
+[tool.black]
+target_version = ["py310"]
