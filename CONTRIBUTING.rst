@@ -69,7 +69,7 @@ Ready to contribute? Here's how to set up `msal_requests_auth` for local develop
     $ cd msal_requests_auth/
     $ python3 -m venv venv
     $ source venv/bin/activate
-    $ python -m pip install -e .[all]
+    $ python -m pip install -e .[all] --group dev
 
 4. Install pre-commit::
 
