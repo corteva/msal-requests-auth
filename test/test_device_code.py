@@ -1,10 +1,15 @@
 import os
 from unittest.mock import MagicMock, patch
 
+import msal
 import pytest
 
 from msal_requests_auth.auth import DeviceCodeAuth
 from msal_requests_auth.exceptions import AuthenticationError
+
+
+class PublicClientApplicationSpec(msal.PublicClientApplication):
+    authority = MagicMock(spec=msal.authority.Authority)
 
 
 @patch.dict(os.environ, {}, clear=True)
@@ -15,7 +20,7 @@ from msal_requests_auth.exceptions import AuthenticationError
 def test_device_code_auth__no_accounts(
     pyperclip_patch, webbrowser_patch, pca_mock, headless
 ):
-    pca_mock.get_accounts.return_value = None
+    pca_mock.get_accounts.return_value = []
     pca_mock.initiate_device_flow.return_value = {
         "message": "TEST MESSAGE",
         "verification_uri": "TEST URL",
@@ -69,7 +74,7 @@ def test_device_code_auth__headless(pca_mock, headless):
 def test_device_code_auth__no_accounts__unable_to_get_token__call(
     pyperclip_patch, webbrowser_patch, pca_mock
 ):
-    pca_mock.get_accounts.return_value = None
+    pca_mock.get_accounts.return_value = []
     pca_mock.initiate_device_flow.return_value = {
         "message": "TEST MESSAGE",
         "verification_uri": "TEST URL",
@@ -137,13 +142,16 @@ def test_device_code_auth__get_access_token__valid(access_token_mock, pca_mock):
 
 
 @patch.dict(os.environ, {}, clear=True)
-@patch("msal.PublicClientApplication", autospec=True)
+@patch("msal.PublicClientApplication", spec=PublicClientApplicationSpec)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
 @patch("msal_requests_auth.auth.device_code.pyperclip")
 def test_device_code_auth__invalid_accounts(
     pyperclip_patch, webbrowser_patch, pca_mock
 ):
-    pca_mock.get_accounts.return_value = [{"account": "TEST ACCOUNT"}]
+    pca_mock.get_accounts.return_value = [
+        {"account": "TEST ACCOUNT", "realm": "123-456"}
+    ]
+    pca_mock.authority.tenant = "123-456"
     pca_mock.acquire_token_silent.return_value = None
     pca_mock.initiate_device_flow.return_value = {
         "message": "TEST MESSAGE",
@@ -160,7 +168,7 @@ def test_device_code_auth__invalid_accounts(
         request_mock
     )
     pca_mock.acquire_token_silent.assert_called_with(
-        scopes=["TEST SCOPE"], account={"account": "TEST ACCOUNT"}
+        scopes=["TEST SCOPE"], account={"account": "TEST ACCOUNT", "realm": "123-456"}
     )
     pca_mock.initiate_device_flow.assert_called_with(scopes=["TEST SCOPE"])
     pca_mock.acquire_token_by_device_flow.assert_called_with(
@@ -178,11 +186,15 @@ def test_device_code_auth__invalid_accounts(
 
 
 @patch.dict(os.environ, {}, clear=True)
-@patch("msal.PublicClientApplication", autospec=True)
+@patch("msal.PublicClientApplication", spec=PublicClientApplicationSpec)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
 @patch("msal_requests_auth.auth.device_code.pyperclip")
 def test_device_code_auth__accounts(pyperclip_patch, webbrowser_patch, pca_mock):
-    pca_mock.get_accounts.return_value = [{"account": "TEST ACCOUNT"}]
+    pca_mock.get_accounts.return_value = [
+        {"account": "WRONG ACCOUNT"},
+        {"account": "TEST ACCOUNT", "realm": "123-456"},
+    ]
+    pca_mock.authority.tenant = "123-456"
     pca_mock.acquire_token_silent.return_value = {
         "token_type": "Bearer",
         "access_token": "TEST TOKEN",
@@ -194,7 +206,7 @@ def test_device_code_auth__accounts(pyperclip_patch, webbrowser_patch, pca_mock)
         request_mock
     )
     pca_mock.acquire_token_silent.assert_called_with(
-        scopes=["TEST SCOPE"], account={"account": "TEST ACCOUNT"}
+        scopes=["TEST SCOPE"], account={"account": "TEST ACCOUNT", "realm": "123-456"}
     )
     pca_mock.initiate_device_flow.assert_not_called()
     pca_mock.acquire_token_by_device_flow.assert_not_called()
@@ -210,7 +222,7 @@ def test_device_code_auth__accounts(pyperclip_patch, webbrowser_patch, pca_mock)
 @patch("msal_requests_auth.auth.device_code.pyperclip")
 def test_device_code_auth__pyperclip_error(pyperclip_patch, webbrowser_patch, pca_mock):
     pyperclip_patch.copy.side_effect = AttributeError
-    pca_mock.get_accounts.return_value = None
+    pca_mock.get_accounts.return_value = []
     pca_mock.initiate_device_flow.return_value = {
         "message": "TEST MESSAGE",
         "verification_uri": "TEST URL",

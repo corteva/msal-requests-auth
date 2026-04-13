@@ -52,15 +52,14 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
         Based on README: https://github.com/AzureAD/microsoft-authentication-library-for-python
         """
         accounts = self.client.get_accounts()
-        result = None
-        if accounts:
-            # use MSAL cache if available
-            result = self.client.acquire_token_silent(
-                scopes=self.scopes,
-                account=accounts[0],
-            )
-            if result:
-                return result
+        for account in accounts:
+            if account.get("realm") == self.client.authority.tenant:
+                # use MSAL cache if available
+                if result := self.client.acquire_token_silent(
+                    scopes=self.scopes,
+                    account=account,
+                ):
+                    return result
         # "No suitable token exists in cache. Get a new one from AAD
         flow = self.client.initiate_device_flow(
             scopes=self.scopes,
