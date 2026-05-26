@@ -69,6 +69,24 @@ def test_device_code_auth__headless(pca_mock, headless):
 
 @patch.dict(os.environ, {}, clear=True)
 @patch("msal.PublicClientApplication", autospec=True)
+def test_device_code_auth__initiate_flow__error(pca_mock):
+    pca_mock.get_accounts.return_value = []
+    pca_mock.initiate_device_flow.return_value = {
+        "error": "BAD REQUEST",
+        "error_description": "Request to get token was bad.",
+    }
+    with pytest.raises(
+        AuthenticationError,
+        match=(
+            r"Unable to get token\. Error: BAD REQUEST "
+            r"\(Details: Request to get token was bad\.\)\."
+        ),
+    ):
+        DeviceCodeAuth(client=pca_mock, scopes=["TEST SCOPE"]).get_access_token()
+
+
+@patch.dict(os.environ, {}, clear=True)
+@patch("msal.PublicClientApplication", autospec=True)
 @patch("msal_requests_auth.auth.device_code.webbrowser")
 @patch("msal_requests_auth.auth.device_code.pyperclip")
 def test_device_code_auth__no_accounts__unable_to_get_token__call(
