@@ -64,6 +64,8 @@ class DeviceCodeAuth(BaseMSALRefreshAuth):
         flow = self.client.initiate_device_flow(
             scopes=self.scopes,
         )
+        if "message" not in flow:
+            self._raise_authentication_error(flow)
         print(flow["message"])
         if not self._headless:
             # copy code to clipboard

@@ -51,6 +51,13 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
         ] = f"{token['token_type']} {token['access_token']}"
         return input_request
 
+    def _raise_authentication_error(self, token_payload: Dict[str, str]):
+        error = token_payload.get("error")
+        description = token_payload.get("error_description")
+        raise AuthenticationError(
+            f"Unable to get token. Error: {error} (Details: {description})."
+        )
+
     def get_access_token(self) -> Dict[str, str]:
         """
         Retrieves the token dictionary from Azure AD.
@@ -63,11 +70,7 @@ class BaseMSALRefreshAuth(requests.auth.AuthBase):
         """
         token = self._get_access_token()
         if "access_token" not in token:
-            error = token.get("error")
-            description = token.get("error_description")
-            raise AuthenticationError(
-                f"Unable to get token. Error: {error} (Details: {description})."
-            )
+            self._raise_authentication_error(token)
         return token
 
     @abstractmethod
