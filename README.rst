@@ -7,10 +7,10 @@ for repeated requests.
 
 .. image:: https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square
     :alt: All Contributors
-    :target: https://github.com/corteva/msal-requests-auth/blob/master/AUTHORS.rst
+    :target: https://github.com/vylor/msal-requests-auth/blob/master/AUTHORS.rst
 
 .. image:: https://img.shields.io/badge/License-BSD%203--Clause-yellow.svg
-    :target: https://github.com/corteva/msal-requests-auth/blob/master/LICENSE
+    :target: https://github.com/vylor/msal-requests-auth/blob/master/LICENSE
 
 .. image:: https://img.shields.io/pypi/v/msal_requests_auth.svg
     :target: https://pypi.python.org/pypi/msal_requests_auth
@@ -21,11 +21,11 @@ for repeated requests.
 .. image:: https://img.shields.io/conda/vn/conda-forge/msal_requests_auth.svg
     :target: https://anaconda.org/conda-forge/msal_requests_auth
 
-.. image:: https://github.com/corteva/msal-requests-auth/workflows/Tests/badge.svg
-    :target: https://github.com/corteva/msal-requests-auth/actions?query=workflow%3ATests
+.. image:: https://github.com/vylor/msal-requests-auth/workflows/Tests/badge.svg
+    :target: https://github.com/vylor/msal-requests-auth/actions?query=workflow%3ATests
 
-.. image:: https://codecov.io/gh/corteva/msal-requests-auth/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/corteva/msal-requests-auth
+.. image:: https://codecov.io/gh/vylor/msal-requests-auth/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/vylor/msal-requests-auth
 
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
     :target: https://github.com/pre-commit/pre-commit
@@ -37,8 +37,8 @@ for repeated requests.
 Bugs/Questions
 --------------
 
-- Report bugs/feature requests: https://github.com/corteva/msal-requests-auth/issues
-- Ask questions: https://github.com/corteva/msal-requests-auth/discussions
+- Report bugs/feature requests: https://github.com/vylor/msal-requests-auth/issues
+- Ask questions: https://github.com/vylor/msal-requests-auth/discussions
 
 
 Usage

@@ -69,7 +69,7 @@ dev = [
 ]
 
 [project.urls]
-repository = "https://github.com/corteva/msal-requests-auth"
+repository = "https://github.com/vylor/msal-requests-auth"
 
 
 [tool.setuptools.packages.find]
